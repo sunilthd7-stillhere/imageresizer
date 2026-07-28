@@ -188,12 +188,27 @@ function updateProgress(done,total){
 async function fetchImage(url) {
 
     try {
-
+/*
         const response = await fetch(url, {
             mode: "cors",
             cache: "no-cache"
         });
+*/
+let fetchUrl = url;
 
+if (url.includes("storefeederimages.blob.core.windows.net")) {
+
+    fetchUrl =
+        "https://images.weserv.nl/?url=" +
+        encodeURIComponent(url.replace(/^https?:\/\//, ""));
+
+}
+
+const response = await fetch(fetchUrl,{
+    mode:"cors",
+    cache:"no-cache"
+});
+        
         if (!response.ok)
             throw new Error("HTTP " + response.status);
 
