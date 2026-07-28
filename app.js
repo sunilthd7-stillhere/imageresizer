@@ -184,8 +184,27 @@ function updateProgress(done,total){
 // Bulk Image Resizer
 // Part 2 - Download Manager
 // ======================================
-
 async function fetchImage(url) {
+
+    let fetchUrl = url;
+
+    if (url.includes("storefeederimages.blob.core.windows.net")) {
+
+        fetchUrl =
+            "https://images.weserv.nl/?url=" +
+            url.replace(/^https?:\/\//, "");
+
+    }
+
+    console.log(fetchUrl);
+
+    const response = await fetch(fetchUrl);
+
+    console.log(response);
+
+    return await response.blob();
+}
+async function fetchImageXX(url) {
 
     try {
 /*
