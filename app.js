@@ -462,7 +462,7 @@ async function processImage(blob, filename, zip) {
                     newWidth,
                     newHeight
                 );
-
+/*
                 // Always save as JPG
                 canvas.toBlob(function(outputBlob){
 
@@ -483,7 +483,48 @@ async function processImage(blob, filename, zip) {
                     resolve();
 
                 }, "image/jpeg", JPEG_QUALITY);
-
+*/
+                // Create JPEG
+                const jpegData = canvas.toDataURL("image/jpeg", JPEG_QUALITY);
+                
+                // Create EXIF metadata
+                const zeroth = {};
+                zeroth[piexif.ImageIFD.XResolution] = [300, 1];
+                zeroth[piexif.ImageIFD.YResolution] = [300, 1];
+                zeroth[piexif.ImageIFD.ResolutionUnit] = 2;
+                
+                const exifObj = {
+                    "0th": zeroth
+                };
+                
+                const exifBytes = piexif.dump(exifObj);
+                
+                const jpegWithExif = piexif.insert(exifBytes, jpegData);
+                
+                // Convert DataURL to Blob
+                const byteString = atob(jpegWithExif.split(",")[1]);
+                const mimeString = jpegWithExif.split(",")[0].split(":")[1].split(";")[0];
+                
+                const ab = new ArrayBuffer(byteString.length);
+                const ia = new Uint8Array(ab);
+                
+                for (let i = 0; i < byteString.length; i++) {
+                    ia[i] = byteString.charCodeAt(i);
+                }
+                
+                const outputBlob = new Blob([ab], { type: mimeString });
+                
+                let outputName = filename;
+                
+                outputName = outputName.replace(/\.(png|webp|jpeg)$/i, ".jpg");
+                
+                if (!outputName.toLowerCase().endsWith(".jpg")) {
+                    outputName += ".jpg";
+                }
+                
+                zip.file(outputName, outputBlob);
+                
+                resolve();
             }
             catch(ex){
 
